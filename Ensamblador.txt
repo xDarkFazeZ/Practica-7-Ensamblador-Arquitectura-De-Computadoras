@@ -1,0 +1,431 @@
+
+const int C = A3;
+const int A = A2;
+const int D = A1;
+const int B = A0;
+const int Sel1 = A4;
+const int Sel2 = A5;
+const int Sel3 = 11;
+const int pinG = 5;
+const int pinF = 6;
+const int pinA = 7;
+const int pinB = 8;
+const int pinE = 2;
+const int pinD = 3;
+const int pinC = 4;
+const int Display01 = 10;
+const int Display10 = 9;
+char comando[4];
+int num1 = 0, num2 = 0, data;
+int buttonC = 0;
+int buttonA = 0;
+int buttonB = 0;
+int buttonD = 0;
+int buttonStateSel1 = 0;
+int buttonStateSel2 = 0;
+int buttonStateSel3 = 0;
+int num = 0; //variables
+int decU = 0; //variables
+int decD = 0; //variables
+bool err = false; //variables
+String mensaje;
+bool twoB = false;
+int res = 0;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println ("Terminal Activada.");
+  pinMode(A,INPUT); // SWITCH2
+  pinMode(B,INPUT); // SWITCH 4
+  pinMode(C,INPUT); // SWITCH 1
+  pinMode(D,INPUT); //SWITCH 3
+  pinMode(pinA,OUTPUT);
+  pinMode(pinB,OUTPUT);
+  pinMode(pinC,OUTPUT);
+  pinMode(pinD,OUTPUT);
+  pinMode(pinE,OUTPUT);
+  pinMode(pinF,OUTPUT);
+  pinMode(pinG,OUTPUT);
+  pinMode(Display01,OUTPUT); 
+  pinMode(Display10,OUTPUT); 
+  pinMode(Sel1, INPUT);
+  pinMode(Sel2, INPUT);
+  pinMode(Sel3, INPUT);
+}
+void loop() {
+  int Unidades = 0;
+  int Decenas = 0;
+  int Centenas = 0;
+  int Millares = 0;
+  buttonA = digitalRead(A); //LECTURA DE SWITCHES 
+  buttonB = digitalRead(B);
+  buttonC = digitalRead(C);
+  buttonD = digitalRead(D);
+  buttonStateSel1 = digitalRead(Sel1); //LECTURA DE BOTONES 
+  buttonStateSel2 = digitalRead(Sel2);
+  buttonStateSel3 = digitalRead(Sel3);
+  
+//SUMA
+  err = false; //CADA VEZ QUE REGRESE LO MARCA COMO FALSO
+  if ((buttonA ^ buttonB) && (!buttonStateSel1) && (!buttonStateSel2) && (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  }
+  if (((buttonC ^ buttonD) ^ (buttonA && buttonB)) && (!buttonStateSel1) && (!buttonStateSel2) && (!buttonStateSel3)) {
+    Decenas = 1; //0010
+  }
+  if (((buttonC ^ buttonD) && (buttonA && buttonB)) && (!buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Centenas = 1; //0100
+  }
+  if ((buttonC && buttonD) && (!buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+  Centenas = 1; //0100
+  }
+//
+//RESTA
+  if ((buttonA ^ buttonB) && (buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  }
+  if ((buttonC ^ buttonD) ^ (!buttonA && buttonB) && (buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Decenas = 1; //0010
+  }
+  if ((!buttonC && !buttonD) && (!buttonA && buttonB) && (buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Centenas = 1; //0100
+  }
+  if ((!buttonC && buttonD) && (!buttonA && buttonB) && (buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Centenas = 1; //0100
+  }
+  if ((!buttonC && buttonD) && (!buttonA && !buttonB) && (buttonStateSel1) && (!buttonStateSel2)&& (!buttonStateSel3)) {
+    Centenas = 1; //0100
+  }
+//
+//MULTIPLICACION
+  if ((buttonA && buttonB) && (!buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  }
+  if ((buttonC && buttonB) ^ (buttonD && buttonA) && (!buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Decenas = 1; //0010
+  }
+  if (((buttonC && buttonB) && (buttonD && buttonA)) ^ (buttonC && buttonD) && (!buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Centenas = 1; //0100
+  }
+  if ((buttonC && buttonB) && (buttonD && buttonA) && (buttonC && buttonD) && (!buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Millares = 1; //1000
+  }
+//
+//DIVISION
+  if ((!buttonD && !buttonB) && (buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)){
+    Error(); //llama al metodo del error
+    err = true;
+    delay(0);
+  }
+  if ((buttonC && buttonB && !buttonD) && (buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Decenas = 1; //0010
+  }
+  if ((buttonA && buttonB && !buttonD) && (buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  }
+  if ((buttonC && buttonD && !buttonB) && (buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  } 
+  if ((buttonA && buttonB && buttonC && buttonD) && (buttonStateSel1) && (buttonStateSel2)&& (!buttonStateSel3)) {
+    Unidades = 1; //0001
+  }
+//
+//---------LOGICAS------------
+//AND
+  if ((buttonA && buttonB) && (buttonStateSel1) && (buttonStateSel2) && (buttonStateSel3)) {
+    Unidades = 1;
+  }
+  if ((buttonC && buttonD) && (buttonStateSel1) && (buttonStateSel2) && (buttonStateSel3)) {
+    Millares = 1;
+    Decenas = 1;
+  }
+//
+//OR
+  if ((buttonA || buttonB) && (!buttonStateSel1) && (buttonStateSel2) && (buttonStateSel3)) {
+    Unidades = 1;
+  }  
+  if ((buttonC || buttonD) && (!buttonStateSel1) && (buttonStateSel2) && (buttonStateSel3)) {
+    Millares = 1;
+    Decenas = 1;
+  }
+//
+//XOR
+  if ((buttonA ^ buttonB) && (buttonStateSel1) && (!buttonStateSel2) && (buttonStateSel3)) {
+    Unidades = 1;
+  }
+  if ((buttonC ^ buttonD) && (buttonStateSel1) && (!buttonStateSel2) && (buttonStateSel3)) {
+    Millares = 1;
+    Decenas = 1;
+  }
+//
+//NOT
+  if ((!buttonA) && (!buttonStateSel1) && (!buttonStateSel2) && (buttonStateSel3)) {
+    Millares = 1;
+    Decenas = 1;
+  }
+  if ((!buttonB) && (!buttonStateSel1) && (!buttonStateSel2) && (buttonStateSel3)) {
+    Unidades = 1;
+  }
+//
+  num = (Unidades + (Decenas * 2) + (Centenas * 4) + (Millares * 8));
+  decD = num / 10; 
+  decU = num % 10; // SE OBTIENE EL SOBRANTE
+  if (!err)  //Si no marco error se hacen los calculos
+  {
+    SalidaDisplay(decU,decD);
+  }
+
+//Serial
+  while(Serial.available()) {
+    twoB=false;
+    mensaje = " ";
+    data = Serial.readBytesUntil(13, comando, 4);
+    comando[data] = 0;
+    num1 = Serial.parseInt();
+    num2 = Serial.parseInt();
+    Serial.print(comando); Serial.print(" "); Serial.print(num1); Serial.print(" "); Serial.println(num2);
+    bool ComHelp = strcmp  (comando, "help"); 
+    
+    if (!ComHelp) {
+      Serial.println("Comandos");
+      Serial.println("suma (parametro1) (parametro2): suma los dos parametros.");
+      Serial.println("rest (parametro1) (parametro2): al primer parametro le resta el segundo.");
+      Serial.println("mult (parametro1) (parametro2): multiplica los parametros.");
+      Serial.println("divi (parametro1) (parametro2): divide el primer parametro entre el segundo");
+      Serial.println("and (parametro1) (parametro2): compara ambos parametros con la operacion logica and");
+      Serial.println("orr (parametro1) (parametro2) compara ambos parametros con la operacion logica or");
+      Serial.println("xor (parametro1) (parametro2) compara ambos parametros con la operacion logica xor");
+      Serial.println("not (parametro): niega el parametro.");
+      Serial.println("help: muestra ayuda de los comandos.");
+    }
+    delay(1);
+    bool ComSuma = strcmp  (comando, "suma"); 
+    if (!ComSuma) {
+      res = num1 + num2;
+      mensaje = (res);
+    }
+    delay(1);
+    bool ComResta = strcmp  (comando, "rest"); 
+    if (!ComResta) {
+      res = num1 - num2;
+      if (res < 0) {
+        res = 16 + res;
+      }
+      mensaje = (res);
+    }
+    delay(1);
+    bool ComMult = strcmp  (comando, "mult"); 
+    if (!ComMult) {
+      res = num1 * num2;
+      mensaje = (res);
+    }
+    delay(1);
+    bool ComDiv = strcmp  (comando, "divi"); 
+    if (!ComDiv) {
+      if (num2==0) {
+        mensaje = ("Error, no se puede dividir entre cero.");
+      }
+      else {
+        res = num1 / num2;
+        mensaje = (res);
+      }
+    }
+    delay(1);
+    bool ComAnd = strcmp  (comando, "and "); 
+    if (!ComAnd && (num1==0 || num1==1) && (num2==0 || num2==1)) {
+      if (num1==1 && num2==1){
+        res = 1;
+        mensaje = (res);
+      }
+      else {
+        res = 0;
+        mensaje = (res);
+      }
+    }
+    delay(1);
+    bool ComOr = strcmp  (comando, "orr "); 
+    if (!ComOr && (num1==0 || num1==1) && (num2==0 || num2==1)) {
+      if (num1==1 || num2==1){
+        res = 1;
+        mensaje = (res);
+      }
+      else {
+        res = 0;
+        mensaje = (res);
+      }
+    }
+    delay(1);
+    bool ComXor = strcmp  (comando, "xor "); 
+    if (!ComXor && (num1==0 || num1==1) && (num2==0 || num2==1)) {
+      if (num1==1 ^ num2==1){
+        res = 1;
+        mensaje = (res);
+      }
+      else {
+        res = 0;
+        mensaje = (res);
+      }
+    }
+    delay(1);
+    bool ComNot = strcmp  (comando, "not "); 
+    if (!ComNot && (num1==0 || num1==1)) {
+      if (num1==0){
+        res = 1;
+        mensaje = (res);
+      }
+      else {
+        res = 0;
+        mensaje = (res);
+      }
+    }
+    delay(1);
+    if (ComHelp && ComSuma && ComResta && ComMult && ComDiv && ComAnd && ComOr && ComXor && ComNot) {
+      mensaje = ("Error, comando no conocido.\nEscribe «help» para ver los comandos.");
+    }
+    bool noMensaje = false;
+    if (mensaje.equals(" ")) {
+      noMensaje = true;
+    }
+    if (ComHelp & ComSuma & ComResta & ComMult & ComDiv & (!ComAnd | !ComOr | !ComXor | !ComNot) & (noMensaje)) {
+      mensaje = ("Los numeros ingresados deben ser 1 o 0.");
+    }
+    
+    Serial.println(mensaje);
+    if ((!ComSuma || !ComResta || !ComMult || !ComDiv) && ((num1>=(16) || num2>=(16)))) {
+      Serial.println("Error, los digitos son mayores a cuatro bits.");
+    }
+    decD = res / 10; 
+    decU = res % 10;
+    SalidaDisplaySerial(decU, decD, 5);
+    memset(comando, 0, sizeof(comando));
+    num2 = 0;
+    num1 = 0;
+    Serial.readString();
+  }
+//
+
+}
+void SalidaDisplaySerial(int unit, int dec,int veces) {
+  if (Serial.readString() && veces>0) {
+    Numero(unit);  
+    digitalWrite(Display01,HIGH); 
+    delay(1); 
+    digitalWrite(Display01,LOW);  
+    ApagarTodo();  
+    delay(10); 
+    Numero(dec);  
+    digitalWrite(Display10,HIGH); 
+    delay(1); 
+    digitalWrite(Display10,LOW); 
+    ApagarTodo();
+    delay(0);
+    SalidaDisplaySerial(unit, dec, (veces-1));
+  }
+}
+
+void Numero(int num) { //DEPENDE DEL NUMERO, SE CREA EN EL DISPLAY
+  if (num==0) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinE, LOW);
+    digitalWrite(pinF, LOW);
+  }
+  if (num==1) {
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+  }
+  if (num==2) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinG, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinE, LOW);
+  }
+  if (num==3) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinG, LOW);
+  }
+  if (num==4) {
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinG, LOW);
+    digitalWrite(pinF, LOW);
+  }
+  if (num==5) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinG, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinF, LOW);
+  }
+  if (num==6) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinG, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinE, LOW);
+    digitalWrite(pinF, LOW);
+  }
+  if (num==7) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+  }
+  if (num==8) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinE, LOW);
+    digitalWrite(pinF, LOW);
+    digitalWrite(pinG, LOW);
+  }
+  if (num==9) {
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, LOW);
+    digitalWrite(pinC, LOW);
+    digitalWrite(pinD, LOW);
+    digitalWrite(pinG, LOW);
+    digitalWrite(pinF, LOW);
+  }
+}
+void ApagarTodo() { //METODO DE APAGAR TODO
+  digitalWrite(pinA, HIGH);
+  digitalWrite(pinB, HIGH);
+  digitalWrite(pinC, HIGH);
+  digitalWrite(pinD, HIGH);
+  digitalWrite(pinE, HIGH);
+  digitalWrite(pinF, HIGH);
+  digitalWrite(pinG, HIGH);
+}
+void Error() { //METODO DE ERROR 
+  digitalWrite(pinG, LOW);
+  digitalWrite(Display01, HIGH);
+  delay(5);
+  digitalWrite(Display01, LOW);
+  ApagarTodo();  
+  delay(0);
+  digitalWrite(pinG, LOW);
+  digitalWrite(Display10, HIGH);
+  delay(5);
+  digitalWrite(Display10, LOW);
+  ApagarTodo();
+}
+void SalidaDisplay(int unit, int dec) {
+  Numero(unit);  
+  digitalWrite(Display01,HIGH); 
+  delay(1); 
+  digitalWrite(Display01,LOW);  
+  ApagarTodo();  
+  delay(20); 
+  Numero(dec);  
+  digitalWrite(Display10,HIGH); 
+  delay(1); 
+  digitalWrite(Display10,LOW); 
+  ApagarTodo();
+}
